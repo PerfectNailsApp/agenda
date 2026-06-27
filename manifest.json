@@ -1,0 +1,50 @@
+{
+  "name": "Agenda - Manicuristas",
+  "short_name": "Agenda",
+  "description": "Aplicación de agenda para manicuristas. Gestiona citas, clientas, cobros y disponibilidad sin necesidad de internet.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#9C6B5E",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%239C6B5E' width='192' height='192'/><text x='96' y='120' font-size='120' font-weight='bold' fill='white' text-anchor='middle' font-family='Georgia, serif'>A</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect fill='%239C6B5E' width='192' height='192'/><text x='96' y='120' font-size='120' font-weight='bold' fill='white' text-anchor='middle' font-family='Georgia, serif'>A</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 540 720'><rect fill='%23f5f5f5' width='540' height='720'/><text x='270' y='360' font-size='80' fill='%239C6B5E' text-anchor='middle' font-family='Georgia, serif'>Agenda</text></svg>",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "categories": ["productivity", "business"],
+  "shortcuts": [
+    {
+      "name": "Nueva cita",
+      "short_name": "Cita",
+      "description": "Crear una nueva cita rápidamente",
+      "url": "./?action=newcita",
+      "icons": []
+    },
+    {
+      "name": "Disponibilidad",
+      "short_name": "Disponibilidad",
+      "description": "Compartir disponibilidad por WhatsApp",
+      "url": "./?action=disponibilidad",
+      "icons": []
+    }
+  ]
+}
