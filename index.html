@@ -67,6 +67,15 @@
   .tabnum{font-variant-numeric:tabular-nums;}
   .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 </style>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    console.log('Service Worker registrado');
+  }).catch(err=>{
+    console.error('Error registrando Service Worker:', err);
+  });
+}
+</script>
 </head>
 <body>
 <div id="app"></div>
@@ -230,7 +239,8 @@ function normGastos(gastos){
 let state = { citas:{}, servicios:SERVICIOS_DEFAULT, incluirSabado:true, clientes:{}, gastos:[], ultimoBackup:null, vacaciones:[],
   negocio:"Mi negocio", tema:"rosado", horarios:HORARIOS_DEFAULT.slice(), configurado:false, logo:null, piePersonalizado:"",
   fidelidadActiva:false, fidelidadMeses:5, fidelidadPremio:"un diseño gratis",
-  conceptosGasto:["Autónomos","Luz","Agua","Local","Gestoría"] };
+  conceptosGasto:["Autónomos","Luz","Agua","Local","Gestoría"],
+  formasPago:[{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}] };
 let selectedKey = toKey(new Date());
 
 function load(){
@@ -256,6 +266,7 @@ function load(){
         fidelidadMeses: (typeof p.fidelidadMeses==="number" && p.fidelidadMeses>=2) ? p.fidelidadMeses : 5,
         fidelidadPremio: typeof p.fidelidadPremio==="string" && p.fidelidadPremio.trim() ? p.fidelidadPremio : "un diseño gratis",
         conceptosGasto: Array.isArray(p.conceptosGasto) ? p.conceptosGasto.filter(x=>typeof x==="string" && x.trim()) : ["Autónomos","Luz","Agua","Local","Gestoría"],
+        formasPago: Array.isArray(p.formasPago) ? p.formasPago.filter(x=>x&&typeof x.id==="string"&&typeof x.nombre==="string") : [{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}],
         configurado: true, // ya había datos guardados de antes: no forzar el asistente
       };
     }
@@ -1166,11 +1177,13 @@ function openCita(dateKey, cita, draft){
   renderChips();
 
   let pagoSel = initial.pago || "";
-  const PAGO_OPCIONES = [["","Pendiente"],["efectivo","Efectivo"],["tarjeta","Tarjeta"],["bizum","Bizum"]];
+  function getPAGO_OPCIONES(){
+    return state.formasPago.map(f=>[f.id, f.nombre]);
+  }
   const pagoChips = el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
   function renderPagoChips(){
     pagoChips.innerHTML="";
-    PAGO_OPCIONES.forEach(([val,label])=>{
+    getPAGO_OPCIONES().forEach(([val,label])=>{
       const on = pagoSel===val;
       const chip = el("button",{class:"chip"+(on?" chip-on":""), onClick:()=>{ pagoSel=val; renderPagoChips(); }});
       if(on) chip.appendChild(icon("check",14));
@@ -1727,6 +1740,39 @@ function openSettings(){
     ));
   });
   sheet.appendChild(cgList);
+
+  // formas de pago
+  sheet.appendChild(el("p",{style:{fontSize:"12px",fontWeight:"500",margin:"20px 0 8px",color:"var(--muted)"}},"Formas de pago"));
+  sheet.appendChild(el("p",{style:{fontSize:"11px",lineHeight:"1.4",margin:"0 0 10px",color:"var(--muted)"}},
+    "Personaliza las formas de pago que usas (Efectivo, Bizum, Nequi, Paypal, etc.)"));
+  const fpNombre = el("input",{class:"field",placeholder:"Ej. Nequi, Paypal…",style:{flex:"1",minWidth:"0",fontSize:"14px"}});
+  const fpErr = el("p",{style:{fontSize:"12px",color:"var(--danger)",margin:"0 0 8px"}});
+  function añadirFormaPago(){
+    const n = fpNombre.value.trim();
+    if(!n){ fpErr.textContent="Escribe el nombre de la forma de pago."; return; }
+    if((state.formasPago||[]).some(x=>normTxt(x.nombre)===normTxt(n))){ fpErr.textContent="Ya tienes esa forma de pago."; return; }
+    fpErr.textContent="";
+    const id = n.toLowerCase().replace(/\s+/g,"_");
+    state.formasPago = (state.formasPago||[]).concat([{id,nombre:n}]);
+    save(); render(); openSettings();
+  }
+  fpNombre.addEventListener("keydown",e=>{ if(e.key==="Enter") añadirFormaPago(); });
+  sheet.appendChild(el("div",{style:{display:"flex",gap:"8px",marginBottom:"8px"}},
+    fpNombre,
+    el("button",{class:"primary","aria-label":"Añadir forma de pago",style:{height:"44px",width:"44px",display:"grid",placeItems:"center",flexShrink:"0"},
+      onClick:añadirFormaPago}, icon("plus",18))
+  ));
+  sheet.appendChild(fpErr);
+  const fpList = el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+  (state.formasPago||[]).forEach(fp=>{
+    const canDelete = state.formasPago.length > 1; // mantener al menos una forma de pago
+    fpList.appendChild(el("span",{class:"chip chip-on"},
+      fp.nombre,
+      canDelete ? el("button",{type:"button","aria-label":"Quitar "+fp.nombre,style:{marginLeft:"2px",display:"flex",color:"#fff"},
+        onClick:()=>{ state.formasPago = state.formasPago.filter(x=>x.id!==fp.id); save(); render(); openSettings(); }}, icon("x",12)) : null
+    ));
+  });
+  sheet.appendChild(fpList);
 
   document.body.appendChild(overlay);
 }
