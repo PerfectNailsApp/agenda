@@ -239,6 +239,64 @@ section { padding: 120px 0; }
 .section-title.center { text-align: center; margin: 0 auto; max-width: 560px; }
 .section-label.center { text-align: center; }
 
+/* ── ABOUT ── */
+#about { background: var(--white); padding: 96px 0; }
+
+.about-inner {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.about-photo {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 20px;
+  display: block;
+}
+
+.about-label { margin-bottom: 20px; }
+
+.about-title {
+  font-size: clamp(28px, 3vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  margin-bottom: 28px;
+}
+
+.about-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.about-body p {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.about-body p strong { color: var(--text); font-weight: 500; }
+
+@media (max-width: 900px) {
+  .about-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .about-photo { max-width: 280px; aspect-ratio: 4/5; }
+}
+
+@media (max-width: 600px) {
+  #about { padding: 56px 0; }
+  .about-photo { max-width: 220px; }
+  .about-title { font-size: 26px; }
+  .about-body p { font-size: 15px; }
+}
+
 /* ── FEATURES ── */
 #features { background: var(--bg-subtle); }
 
@@ -296,7 +354,7 @@ section { padding: 120px 0; }
 
 .story-item:first-child { border-top: 1px solid var(--border); }
 
-.story-num { font-size: 13px; font-weight: 600; color: var(--purple); min-width: 24px; margin-top: 2px; }
+.story-num { font-size: 20px; min-width: 28px; margin-top: 0; line-height: 1.4; }
 .story-text { font-size: 16px; color: var(--text); line-height: 1.5; }
 
 .story-quote {
@@ -479,7 +537,78 @@ section { padding: 120px 0; }
 
 .pricing-btn:hover { background: #6a59a0; }
 
-.pricing-note { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.3); }
+.pricing-note { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.5); }
+
+.pricing-early {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.pricing-early-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+
+.pricing-early-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+}
+
+.pricing-launch {
+  margin-top: 16px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  line-height: 1.5;
+}
+
+/* ── EARLY BANNER ── */
+#early-access {
+  padding: 0;
+  background: var(--white);
+}
+
+.early-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 32px 40px;
+  margin-bottom: 0;
+}
+
+.early-banner-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.early-banner-text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  max-width: 520px;
+}
+
+@media (max-width: 600px) {
+  .early-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px 20px;
+    gap: 20px;
+  }
+  .early-banner .btn { width: 100%; justify-content: center; }
+}
 
 /* ── FAQ ── */
 #faq { background: var(--bg-subtle); }
@@ -541,20 +670,19 @@ footer {
 .footer-ig {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--text);
+  color: var(--text-secondary);
   text-decoration: none;
-  border: 1.5px solid var(--border);
-  padding: 9px 16px;
-  border-radius: 10px;
-  transition: all 0.2s;
+  transition: color 0.2s;
 }
 
-.footer-ig:hover {
-  border-color: var(--purple);
-  color: var(--purple);
+.footer-ig:hover { color: var(--purple); }
+
+.footer-ig::after {
+  content: '↗';
+  font-size: 13px;
 }
 
 /* ── RESPONSIVE ── */
@@ -645,7 +773,7 @@ footer {
     <div class="hero-inner">
       <div>
         <div class="hero-eyebrow">Hecha por una manicurista</div>
-        <h1 class="hero-title">La agenda que creé después de cansarme de pagar suscripciones todos los meses.</h1>
+        <h1 class="hero-title">La agenda creada por una manicurista para manicuristas.</h1>
         <p class="hero-subtitle">
           Soy Marta, manicurista desde hace más de 5 años.<br>
           Necesitaba una agenda sencilla, privada y pensada para profesionales que trabajan solas.<br>
@@ -653,21 +781,44 @@ footer {
         </p>
         <div class="hero-actions">
           <a href="#screenshots" class="btn btn-primary btn-large">Ver cómo funciona</a>
-          <a href="#" class="btn btn-secondary btn-large">Probar demo</a>
         </div>
       </div>
 
       <div class="hero-visual">
         <div class="hero-badge badge-left">
-          <div class="badge-label">Ganancia este mes</div>
-          <div class="badge-val green">546.57€</div>
+          <div class="badge-label">Funciona siempre</div>
+          <div class="badge-val">100% offline</div>
         </div>
         <div class="phone-frame hero-phone">
           <img src="IMG_3726.PNG" alt="Pantalla de inicio de Agenda">
         </div>
         <div class="hero-badge badge-right">
-          <div class="badge-label">Citas este mes</div>
-          <div class="badge-val">38</div>
+          <div class="badge-label">Pago único</div>
+          <div class="badge-val">Sin suscripciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="container">
+    <div class="about-inner">
+      <img
+        src="Captura de pantalla 2026-06-28 a las 15.49.34.png"
+        alt="Marta, manicurista y creadora de Agenda"
+        class="about-photo"
+      >
+      <div>
+        <div class="section-label about-label">Quién hay detrás</div>
+        <h2 class="about-title">Hola, soy Marta.</h2>
+        <div class="about-body">
+          <p>Llevo más de cinco años trabajando como manicurista profesional en España.</p>
+          <p>Durante mucho tiempo me frustró tener que pagar cada mes por herramientas que no estaban pensadas para profesionales que trabajamos solas.</p>
+          <p>Quería algo más sencillo, más privado y que se adaptara a mi forma de trabajar.<br><strong>Como no lo encontré, decidí construirlo.</strong></p>
+          <p>Hoy Agenda es la herramienta que uso cada día para gestionar mis citas, mis clientas y mi negocio.</p>
+          <p>Ahora quiero compartirla con otras profesionales que probablemente estén viviendo exactamente lo mismo que yo viví.</p>
         </div>
       </div>
     </div>
@@ -679,7 +830,7 @@ footer {
   <div class="container">
     <div class="features-header">
       <div class="section-label">Funciones</div>
-      <h2 class="section-title">Todo lo que una manicurista necesita.<br>Nada de lo que no necesita.</h2>
+      <h2 class="section-title">Lo que usas todos los días.</h2>
     </div>
     <div class="features-grid">
       <div class="feature-card">
@@ -725,19 +876,19 @@ footer {
         <h2 class="section-title">Lo que me hizo crear Agenda.</h2>
         <div class="story-items">
           <div class="story-item">
-            <span class="story-num">01</span>
-            <span class="story-text">Estaba cansada de pagar suscripciones que no paraban de subir.</span>
+            <span class="story-num">💸</span>
+            <span class="story-text">Cansada de pagar suscripciones que no paraban de subir.</span>
           </div>
           <div class="story-item">
-            <span class="story-num">02</span>
-            <span class="story-text">Las apps del mercado están pensadas para salones grandes, no para quien trabaja sola.</span>
+            <span class="story-num">🏢</span>
+            <span class="story-text">Las apps estaban pensadas para salones grandes, no para quien trabaja sola.</span>
           </div>
           <div class="story-item">
-            <span class="story-num">03</span>
-            <span class="story-text">Necesitaba algo simple. Sin funciones que nunca voy a usar.</span>
+            <span class="story-num">📱</span>
+            <span class="story-text">Necesitaba algo más sencillo. Sin pantallas que nunca iba a usar.</span>
           </div>
           <div class="story-item">
-            <span class="story-num">04</span>
+            <span class="story-num">🔒</span>
             <span class="story-text">Quería que mis datos fueran míos. Sin cuentas. Sin servidores de terceros.</span>
           </div>
         </div>
@@ -787,6 +938,19 @@ footer {
           <img src="IMG_3725.PNG" alt="Pantalla de PIN de Agenda">
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- EARLY ACCESS BANNER -->
+<section id="early-access">
+  <div class="container">
+    <div class="early-banner">
+      <div class="early-banner-left">
+        <div class="early-banner-title">Estoy en fase de lanzamiento.</div>
+        <div class="early-banner-text">Las primeras compradoras pueden escribirme directamente con cualquier duda. Respondo yo, no un bot. Cuando Agenda crezca, eso dejará de ser posible.</div>
+      </div>
+      <a href="#pricing" class="btn btn-primary">Comprar ahora — 20€</a>
     </div>
   </div>
 </section>
@@ -856,8 +1020,9 @@ footer {
         <li>Compatible con iPhone y Android</li>
         <li>Manual de uso incluido</li>
       </ul>
-      <a href="#" class="btn btn-primary btn-large pricing-btn">Comprar ahora</a>
-      <div class="pricing-note">Pago seguro · Entrega inmediata</div>
+      <a href="#" class="btn btn-primary btn-large pricing-btn">Comprar ahora — 20€</a>
+      <div class="pricing-note">14 días para probarlo. Si no te convence, te devuelvo el dinero.</div>
+      <div class="pricing-launch">Precio de lanzamiento. Subirá cuando termine esta fase.</div>
     </div>
   </div>
 </section>
@@ -901,10 +1066,7 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Agenda</div>
-  <a href="https://instagram.com/kukys__nails" target="_blank" rel="noopener" class="footer-ig">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
-    @kukys__nails
-  </a>
+  <a href="https://instagram.com/kukys__nails" target="_blank" rel="noopener" class="footer-ig">@kukys__nails</a>
   <div class="footer-copy">© 2026 Agenda. Hecha con cariño por una manicurista.</div>
 </footer>
 
