@@ -1134,7 +1134,7 @@ function openCita(dateKey, cita, draft){
     "Si una clienta tiene varios servicios largos, puede tapar el siguiente horario.");
   const clientaInput = el("input",{class:"field",placeholder:"Nombre de la clienta"});
   clientaInput.value = initial.clienta || "";
-  const phoneInput = el("input",{class:"field",type:"tel",placeholder:"Ej. 612 345 678"});
+  const phoneInput = el("input",{class:"field",type:"text",placeholder:"Ej. 612 345 678"});
   phoneInput.value = draft ? (draft.telefono||"") : (cita ? (state.clientes[cita.clienta]||"") : "");
   const notasInput = el("textarea",{class:"field",rows:"2",placeholder:"Color, detalles…"});
   notasInput.value = initial.notas || "";
@@ -2008,7 +2008,7 @@ function openClienteForm(cliente, opts){
 
   const nombreInput = el("input",{class:"field",placeholder:"Nombre de la clienta"});
   nombreInput.value = cliente ? cliente.nombre : "";
-  const telInput = el("input",{class:"field",type:"tel",placeholder:"Ej. 612 345 678"});
+  const telInput = el("input",{class:"field",type:"text",placeholder:"Ej. 612 345 678"});
   telInput.value = cliente ? (cliente.telefono||"") : "";
   const err = el("p",{style:{fontSize:"12px",color:"var(--danger)",margin:"0"}});
 
