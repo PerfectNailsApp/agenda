@@ -1979,12 +1979,23 @@ function openClienteForm(cliente, opts){
 
     const premio = premioFidelidad(cliente.nombre);
     if(premio){
-      sheet.appendChild(el("div",{style:{display:"flex",alignItems:"center",gap:"10px",padding:"12px 14px",marginBottom:"18px",
-        borderRadius:"12px",background:"var(--accentSoft)",border:"1px solid var(--accent)"}},
-        el("span",{style:{color:"var(--accent)",flexShrink:"0"}}, icon("check",18)),
-        el("span",{style:{fontSize:"13px",lineHeight:"1.35",color:"var(--ink)"}},
-          el("strong",{},"¡Clienta fiel! "),
-          "Lleva "+premio.racha+" meses seguidos viniendo. Puedes ofrecerle "+state.fidelidadPremio+".")
+      const mensajeNotificacion = "¡Hola "+cliente.nombre+"!\n\nLlevas varios meses consecutivos sin faltar a tu cita y te quiero recompensarte.\nTe regalo: "+state.fidelidadPremio+"\n\nTe espero en tu próxima cita. 💝";
+      const whatsappUrl = "https://wa.me/?text="+encodeURIComponent(mensajeNotificacion);
+      sheet.appendChild(el("div",{style:{padding:"14px",marginBottom:"18px",borderRadius:"12px",background:"var(--accentSoft)",border:"1px solid var(--accent)"}},
+        el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}},
+          el("span",{style:{color:"var(--accent)",flexShrink:"0"}}, icon("check",18)),
+          el("span",{style:{fontSize:"13px",lineHeight:"1.35",color:"var(--ink)"}},
+            el("strong",{},"¡Clienta fiel! "),
+            "Lleva "+premio.racha+" meses seguidos viniendo. Puedes ofrecerle "+state.fidelidadPremio+".")
+        ),
+        el("div",{style:{display:"flex",gap:"8px",flexWrap:"wrap",marginTop:"10px"}},
+          el("button",{class:"chip",style:{background:"#25D366",color:"#fff",border:"none"},onClick:()=>window.open(whatsappUrl,"_blank")},
+            icon("send",14)," WhatsApp"),
+          el("button",{class:"chip",onClick:()=>{
+            navigator.clipboard.writeText(mensajeNotificacion).then(()=>toast("Mensaje copiado")).catch(()=>toast("Error al copiar"));
+          }},
+            icon("copy",14)," Copiar mensaje")
+        )
       ));
     }
   }
