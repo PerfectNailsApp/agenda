@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda — La app de citas para manicuristas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --purple: #7B68A6;
+  --purple-light: #F0EDF9;
+  --bg-subtle: #F7F6FB;
+  --text: #1F1F1F;
+  --text-secondary: #666666;
+  --white: #FFFFFF;
+  --border: #EAEAEA;
+  --radius: 16px;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--white);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 64px;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-logo {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--text); }
+
+.nav-cta {
+  background: var(--text);
+  color: var(--white) !important;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.nav-cta:hover { opacity: 0.8; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+.btn-primary { background: var(--purple); color: var(--white); }
+.btn-primary:hover { background: #6a59a0; }
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { border-color: #ccc; background: var(--bg-subtle); }
+
+.btn-large { padding: 16px 32px; font-size: 16px; border-radius: 12px; }
+
+/* ── LAYOUT ── */
+section { padding: 120px 0; }
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── PHONE FRAME ── */
+.phone-frame {
+  background: #111;
+  border-radius: 44px;
+  padding: 10px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.22), 0 0 0 1px rgba(0,0,0,0.08);
+  display: inline-block;
+}
+
+.phone-frame img {
+  display: block;
+  border-radius: 36px;
+  width: 100%;
+}
+
+/* ── HERO ── */
+#hero {
+  padding-top: 160px;
+  padding-bottom: 120px;
+  overflow: visible;
+}
+
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--purple);
+  background: var(--purple-light);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 28px;
+  letter-spacing: 0.02em;
+}
+
+.hero-eyebrow::before {
+  content: '';
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--purple);
+}
+
+.hero-title {
+  font-size: clamp(26px, 3vw, 40px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  margin-bottom: 24px;
+}
+
+.hero-subtitle {
+  font-size: 16px;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin-bottom: 36px;
+  max-width: 420px;
+}
+
+.hero-subtitle strong { color: var(--text); font-weight: 500; }
+
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-phone {
+  max-width: 260px;
+  width: 100%;
+}
+
+.hero-badge {
+  position: absolute;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  white-space: nowrap;
+}
+
+.badge-left { left: -20px; top: 28%; }
+.badge-right { right: -10px; top: 58%; }
+
+.badge-label { font-size: 11px; color: var(--text-secondary); margin-bottom: 2px; }
+.badge-val { font-size: 16px; font-weight: 700; color: var(--text); }
+.badge-val.green { color: #34C759; }
+
+/* ── LABELS ── */
+.section-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--purple);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  line-height: 1.2;
+  max-width: 600px;
+}
+
+.section-title.center { text-align: center; margin: 0 auto; max-width: 560px; }
+.section-label.center { text-align: center; }
+
+/* ── FEATURES ── */
+#features { background: var(--bg-subtle); }
+
+.features-header { margin-bottom: 64px; }
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.feature-card {
+  background: var(--white);
+  padding: 36px;
+  transition: background 0.2s;
+}
+
+.feature-card:hover { background: #FAFAFA; }
+
+.feature-icon {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  background: var(--purple-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+.feature-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; letter-spacing: -0.2px; }
+.feature-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
+
+/* ── STORY ── */
+#story { background: var(--white); }
+
+.story-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 96px;
+  align-items: center;
+}
+
+.story-items { display: flex; flex-direction: column; gap: 0; margin-top: 40px; }
+
+.story-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.story-item:first-child { border-top: 1px solid var(--border); }
+
+.story-num { font-size: 13px; font-weight: 600; color: var(--purple); min-width: 24px; margin-top: 2px; }
+.story-text { font-size: 16px; color: var(--text); line-height: 1.5; }
+
+.story-quote {
+  background: var(--bg-subtle);
+  border-radius: var(--radius);
+  padding: 36px;
+  border-left: 3px solid var(--purple);
+}
+
+.story-quote-text { font-size: 18px; line-height: 1.6; color: var(--text); }
+.story-quote-author { margin-top: 20px; font-size: 14px; color: var(--text-secondary); }
+.story-quote-author strong { color: var(--text); font-weight: 600; }
+
+/* ── OFFLINE ── */
+#offline { background: var(--text); color: var(--white); }
+#offline .section-title { color: var(--white); }
+#offline .section-label { color: rgba(255,255,255,0.45); }
+
+.offline-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+}
+
+.offline-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 48px;
+}
+
+.offline-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  background: rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: background 0.2s;
+}
+
+.offline-item:hover { background: rgba(255,255,255,0.09); }
+.offline-item.full-width { grid-column: 1 / -1; }
+
+.offline-icon { font-size: 22px; }
+.offline-label { font-size: 15px; font-weight: 600; color: var(--white); }
+.offline-sub { font-size: 13px; color: rgba(255,255,255,0.4); line-height: 1.4; }
+
+.offline-phone {
+  max-width: 220px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── SCREENSHOTS ── */
+#screenshots { background: var(--bg-subtle); }
+
+.screenshots-header { margin-bottom: 64px; }
+
+.screenshots-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.screenshot-wrap { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+
+.screenshot-wrap .phone-frame { border-radius: 32px; padding: 8px; }
+.screenshot-wrap .phone-frame img { border-radius: 26px; }
+
+.screenshot-wrap:nth-child(3) .phone-frame {
+  transform: scale(1.06);
+  box-shadow: 0 48px 96px rgba(0,0,0,0.28);
+}
+
+/* blur overlay for clientas screenshot */
+.screenshot-blur-wrap {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+}
+
+.screenshot-blur-overlay {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  top: 38%;
+  bottom: 2%;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(247,246,251,0.45);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.screenshot-label {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+/* ── PRICING ── */
+#pricing { background: var(--white); }
+
+.pricing-card {
+  max-width: 420px;
+  margin: 64px auto 0;
+  background: var(--text);
+  border-radius: 24px;
+  padding: 52px 48px;
+  text-align: center;
+  color: var(--white);
+}
+
+.pricing-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.pricing-price {
+  font-size: 80px;
+  font-weight: 700;
+  letter-spacing: -3px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.pricing-currency { font-size: 36px; font-weight: 400; letter-spacing: 0; vertical-align: super; }
+
+.pricing-period {
+  font-size: 15px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 36px;
+  line-height: 1.7;
+}
+
+.pricing-divider { height: 1px; background: rgba(255,255,255,0.1); margin-bottom: 28px; }
+
+.pricing-includes {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 36px;
+  text-align: left;
+}
+
+.pricing-includes li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: rgba(255,255,255,0.82);
+}
+
+.pricing-includes li::before {
+  content: '';
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: url("data:image/svg+xml,%3Csvg width='18' height='18' viewBox='0 0 18 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='9' cy='9' r='9' fill='rgba(255,255,255,0.12)'/%3E%3Cpath d='M5.5 9.5L7.5 11.5L12.5 6.5' stroke='white' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center / contain;
+}
+
+.pricing-btn {
+  width: 100%;
+  justify-content: center;
+  background: var(--purple);
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 12px;
+}
+
+.pricing-btn:hover { background: #6a59a0; }
+
+.pricing-note { margin-top: 16px; font-size: 13px; color: rgba(255,255,255,0.3); }
+
+/* ── FAQ ── */
+#faq { background: var(--bg-subtle); }
+
+.faq-header { margin-bottom: 56px; }
+
+.faq-list { max-width: 640px; margin: 0 auto; }
+
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-item:first-child { border-top: 1px solid var(--border); }
+
+.faq-question {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+  list-style: none;
+  gap: 16px;
+  transition: color 0.2s;
+}
+
+.faq-question:hover { color: var(--purple); }
+
+.faq-question::after {
+  content: '+';
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+details[open] .faq-question::after { transform: rotate(45deg); }
+
+.faq-answer {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  padding-bottom: 20px;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 48px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer-logo { font-size: 15px; font-weight: 600; color: var(--text); }
+.footer-copy { font-size: 13px; color: var(--text-secondary); }
+
+.footer-ig {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  border: 1.5px solid var(--border);
+  padding: 9px 16px;
+  border-radius: 10px;
+  transition: all 0.2s;
+}
+
+.footer-ig:hover {
+  border-color: var(--purple);
+  color: var(--purple);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  nav ul { display: none; }
+  .container { padding: 0 24px; }
+  section { padding: 80px 0; }
+
+  .hero-inner, .story-inner, .offline-inner { grid-template-columns: 1fr; gap: 48px; }
+  .hero-visual { order: -1; }
+  .hero-phone { max-width: 200px; }
+  .badge-left, .badge-right { display: none; }
+
+  .features-grid { grid-template-columns: 1fr 1fr; }
+
+  .screenshots-grid { grid-template-columns: repeat(3, 1fr); }
+  .screenshots-grid .screenshot-wrap:nth-child(4),
+  .screenshots-grid .screenshot-wrap:nth-child(5) { display: none; }
+
+  footer { flex-direction: column; text-align: center; padding: 32px 24px; }
+}
+
+@media (max-width: 600px) {
+  #hero { padding-top: 120px; }
+  .hero-title { font-size: 24px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .offline-grid { grid-template-columns: 1fr; }
+  .screenshots-grid { grid-template-columns: repeat(2, 1fr); }
+  .screenshots-grid .screenshot-wrap:nth-child(5) { display: none; }
+  .pricing-card { padding: 36px 28px; }
+  .pricing-price { font-size: 64px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Agenda</a>
+  <ul class="nav-links">
+    <li><a href="#features">Funciones</a></li>
+    <li><a href="#screenshots">Preview</a></li>
+    <li><a href="#pricing">Precio</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ul>
+  <a href="#pricing" class="nav-cta">Comprar — 20€</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow">Hecha por una manicurista</div>
+        <h1 class="hero-title">La agenda que creé después de cansarme de pagar suscripciones todos los meses.</h1>
+        <p class="hero-subtitle">
+          Soy Marta, manicurista desde hace más de 5 años.<br>
+          Necesitaba una agenda sencilla, privada y pensada para profesionales que trabajan solas.<br>
+          <strong>Como no existía, decidí crearla.</strong>
+        </p>
+        <div class="hero-actions">
+          <a href="#screenshots" class="btn btn-primary btn-large">Ver cómo funciona</a>
+          <a href="#" class="btn btn-secondary btn-large">Probar demo</a>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-badge badge-left">
+          <div class="badge-label">Ganancia este mes</div>
+          <div class="badge-val green">546.57€</div>
+        </div>
+        <div class="phone-frame hero-phone">
+          <img src="pagina web ventas/IMG_3726.PNG" alt="Pantalla de inicio de Agenda">
+        </div>
+        <div class="hero-badge badge-right">
+          <div class="badge-label">Citas este mes</div>
+          <div class="badge-val">38</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="features-header">
+      <div class="section-label">Funciones</div>
+      <h2 class="section-title">Todo lo que una manicurista necesita.<br>Nada de lo que no necesita.</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title">Citas</div>
+        <div class="feature-desc">Gestiona tu agenda diaria sin complicaciones.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👤</div>
+        <div class="feature-title">Clientas</div>
+        <div class="feature-desc">Nombres y teléfonos siempre a mano.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💳</div>
+        <div class="feature-title">Cobros</div>
+        <div class="feature-desc">Efectivo, tarjeta, Bizum — todo registrado.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Gastos</div>
+        <div class="feature-desc">Anota materiales y calcula tu ganancia real.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <div class="feature-title">Estadísticas</div>
+        <div class="feature-desc">Ticket medio, servicio estrella y días más ocupados.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗓️</div>
+        <div class="feature-title">Disponibilidad</div>
+        <div class="feature-desc">Comparte tus huecos por WhatsApp en un toque.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STORY -->
+<section id="story">
+  <div class="container">
+    <div class="story-inner">
+      <div>
+        <div class="section-label">Por qué existe</div>
+        <h2 class="section-title">Lo que me hizo crear Agenda.</h2>
+        <div class="story-items">
+          <div class="story-item">
+            <span class="story-num">01</span>
+            <span class="story-text">Estaba cansada de pagar suscripciones que no paraban de subir.</span>
+          </div>
+          <div class="story-item">
+            <span class="story-num">02</span>
+            <span class="story-text">Las apps del mercado están pensadas para salones grandes, no para quien trabaja sola.</span>
+          </div>
+          <div class="story-item">
+            <span class="story-num">03</span>
+            <span class="story-text">Necesitaba algo simple. Sin funciones que nunca voy a usar.</span>
+          </div>
+          <div class="story-item">
+            <span class="story-num">04</span>
+            <span class="story-text">Quería que mis datos fueran míos. Sin cuentas. Sin servidores de terceros.</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="story-quote">
+          <p class="story-quote-text">"Probé cuatro aplicaciones distintas. Todas me pedían suscripción para lo básico y tenían pantallas que nunca iba a usar."</p>
+          <div class="story-quote-author"><strong>Marta</strong> — fundadora de Agenda</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OFFLINE -->
+<section id="offline">
+  <div class="container">
+    <div class="offline-inner">
+      <div>
+        <div class="section-label">Privacidad</div>
+        <h2 class="section-title">Funciona incluso sin internet.</h2>
+        <div class="offline-grid">
+          <div class="offline-item">
+            <div class="offline-icon">📶</div>
+            <div class="offline-label">100% offline</div>
+            <div class="offline-sub">Sin conexión, sin problemas.</div>
+          </div>
+          <div class="offline-item">
+            <div class="offline-icon">🔒</div>
+            <div class="offline-label">Sin servidores</div>
+            <div class="offline-sub">Nada sale de tu móvil.</div>
+          </div>
+          <div class="offline-item">
+            <div class="offline-icon">👁️</div>
+            <div class="offline-label">Sin cuentas</div>
+            <div class="offline-sub">Ni email ni contraseña.</div>
+          </div>
+          <div class="offline-item">
+            <div class="offline-icon">📱</div>
+            <div class="offline-label">Tus datos, en tu móvil</div>
+            <div class="offline-sub">Solo tú puedes verlos.</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;">
+        <div class="phone-frame offline-phone">
+          <img src="pagina web ventas/IMG_3725.PNG" alt="Pantalla de PIN de Agenda">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section id="screenshots">
+  <div class="container">
+    <div class="screenshots-header">
+      <div class="section-label">La app</div>
+      <h2 class="section-title">Así se ve Agenda.</h2>
+    </div>
+    <div class="screenshots-grid">
+      <div class="screenshot-wrap">
+        <div class="phone-frame">
+          <img src="pagina web ventas/IMG_3726.PNG" alt="Inicio">
+        </div>
+        <div class="screenshot-label">Inicio</div>
+      </div>
+      <div class="screenshot-wrap">
+        <div class="phone-frame">
+          <img src="pagina web ventas/IMG_3727.PNG" alt="Calendario">
+        </div>
+        <div class="screenshot-label">Calendario</div>
+      </div>
+      <div class="screenshot-wrap">
+        <div class="screenshot-blur-wrap phone-frame">
+          <img src="pagina web ventas/IMG_3728.PNG" alt="Clientas">
+          <div class="screenshot-blur-overlay"></div>
+        </div>
+        <div class="screenshot-label">Clientas</div>
+      </div>
+      <div class="screenshot-wrap">
+        <div class="phone-frame">
+          <img src="pagina web ventas/IMG_3729.PNG" alt="Estadísticas">
+        </div>
+        <div class="screenshot-label">Estadísticas</div>
+      </div>
+      <div class="screenshot-wrap">
+        <div class="phone-frame">
+          <img src="pagina web ventas/IMG_3720.png" alt="Disponibilidad">
+        </div>
+        <div class="screenshot-label">Disponibilidad</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-label center">Precio</div>
+    <h2 class="section-title center">Una vez.<br>Y es tuya.</h2>
+    <div class="pricing-card">
+      <div class="pricing-label">Pago único</div>
+      <div class="pricing-price"><span class="pricing-currency">€</span>20</div>
+      <div class="pricing-period">
+        Sin mensualidades.<br>
+        Sin suscripciones.<br>
+        Sin sorpresas.
+      </div>
+      <div class="pricing-divider"></div>
+      <ul class="pricing-includes">
+        <li>Acceso completo a todas las funciones</li>
+        <li>Actualizaciones incluidas para siempre</li>
+        <li>Sin límite de clientas ni de citas</li>
+        <li>Tus datos, solo en tu móvil</li>
+        <li>Compatible con iPhone y Android</li>
+        <li>Manual de uso incluido</li>
+      </ul>
+      <a href="#" class="btn btn-primary btn-large pricing-btn">Comprar ahora</a>
+      <div class="pricing-note">Pago seguro · Entrega inmediata</div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="faq-header">
+      <div class="section-label">Preguntas</div>
+      <h2 class="section-title">FAQ</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary class="faq-question">¿Funciona en iPhone?</summary>
+        <p class="faq-answer">Sí. Agenda funciona en iOS 15 o superior.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Funciona en Android?</summary>
+        <p class="faq-answer">Sí. Compatible con Android 10 o superior. Se descarga directamente, sin pasar por la Play Store.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Necesito internet para usarla?</summary>
+        <p class="faq-answer">No. Funciona completamente offline. Solo necesitas conexión la primera vez que la descargas.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Cómo hago copias de seguridad?</summary>
+        <p class="faq-answer">Desde ajustes puedes exportar todos tus datos en un archivo y guardarlo donde quieras.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Qué ocurre si cambio de móvil?</summary>
+        <p class="faq-answer">Exportas desde el móvil antiguo, instalas la app en el nuevo e importas el archivo. En menos de dos minutos.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Tiene manual de uso?</summary>
+        <p class="faq-answer">Sí. Agenda incluye un manual completo para que puedas empezar desde el primer día sin ninguna duda.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Agenda</div>
+  <a href="https://instagram.com/kukys__nails" target="_blank" rel="noopener" class="footer-ig">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="6" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    @kukys__nails
+  </a>
+  <div class="footer-copy">© 2026 Agenda. Hecha con cariño por una manicurista.</div>
+</footer>
+
+</body>
+</html>
