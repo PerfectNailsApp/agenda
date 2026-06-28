@@ -685,17 +685,21 @@ footer {
   font-size: 13px;
 }
 
-/* ── RESPONSIVE ── */
+/* ── RESPONSIVE TABLET ── */
 @media (max-width: 900px) {
   nav { padding: 0 20px; }
   nav ul { display: none; }
+  .nav-cta { font-size: 13px; padding: 7px 14px; }
   .container { padding: 0 20px; }
   section { padding: 72px 0; }
 
   .hero-inner { grid-template-columns: 1fr; gap: 40px; }
-  .hero-visual { order: -1; }
-  .hero-phone { max-width: 200px; }
+  .hero-visual { display: flex; justify-content: center; margin-top: 8px; }
+  .hero-phone { max-width: 220px; }
   .badge-left, .badge-right { display: none; }
+
+  .about-inner { grid-template-columns: 1fr; gap: 36px; }
+  .about-photo { max-width: 260px; }
 
   .story-inner { grid-template-columns: 1fr; gap: 40px; }
   .offline-inner { grid-template-columns: 1fr; gap: 40px; }
@@ -704,51 +708,102 @@ footer {
   .features-grid { grid-template-columns: 1fr 1fr; }
 
   .screenshots-grid { grid-template-columns: repeat(3, 1fr); row-gap: 24px; }
-  .screenshot-wrap:nth-child(3) .phone-frame { transform: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
+  .screenshot-wrap:nth-child(3) .phone-frame { transform: none; }
 
   footer { flex-direction: column; text-align: center; padding: 32px 20px; gap: 12px; }
 }
 
-@media (max-width: 600px) {
-  nav { padding: 0 16px; height: 56px; }
-  .nav-cta { padding: 7px 14px; font-size: 13px; }
+/* ── RESPONSIVE MÓVIL ── */
+@media (max-width: 480px) {
+  /* Nav: solo logo + CTA compacto */
+  nav {
+    padding: 0 16px;
+    height: 52px;
+  }
+  nav ul { display: none; }
+  .nav-cta {
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 7px;
+    white-space: nowrap;
+  }
+
   .container { padding: 0 16px; }
-  section { padding: 56px 0; }
+  section { padding: 48px 0; }
 
-  #hero { padding-top: 100px; padding-bottom: 56px; }
-  .hero-eyebrow { font-size: 12px; padding: 5px 12px; margin-bottom: 20px; }
-  .hero-title { font-size: 22px; line-height: 1.25; margin-bottom: 16px; }
-  .hero-subtitle { font-size: 15px; margin-bottom: 28px; }
-  .hero-actions { flex-direction: column; }
-  .hero-actions .btn { width: 100%; justify-content: center; }
-  .hero-phone { max-width: 180px; }
+  /* Hero: texto primero, teléfono debajo y centrado */
+  #hero { padding-top: 80px; padding-bottom: 48px; }
+  .hero-inner { gap: 32px; }
+  .hero-eyebrow { font-size: 12px; padding: 5px 12px; margin-bottom: 16px; }
+  .hero-title { font-size: 24px; line-height: 1.25; margin-bottom: 14px; }
+  .hero-subtitle { font-size: 14px; line-height: 1.65; margin-bottom: 24px; max-width: 100%; }
+  .hero-actions .btn { width: 100%; justify-content: center; padding: 14px 20px; font-size: 15px; }
+  .hero-phone { max-width: 200px; }
 
-  .section-title { font-size: 24px; }
+  /* About */
+  #about { padding: 48px 0; }
+  .about-photo { max-width: 180px; border-radius: 16px; }
+  .about-title { font-size: 26px; margin-bottom: 20px; }
+  .about-body p { font-size: 14px; }
 
+  /* Section titles */
+  .section-title { font-size: 22px; }
+  .section-label { font-size: 12px; }
+
+  /* Features */
   .features-grid { grid-template-columns: 1fr; gap: 0; }
-  .feature-card { padding: 24px 20px; }
+  .feature-card { padding: 22px 18px; }
+  .feature-icon { width: 38px; height: 38px; font-size: 17px; margin-bottom: 14px; }
+  .feature-title { font-size: 15px; }
+  .feature-desc { font-size: 13px; }
 
-  .story-quote { padding: 24px 20px; }
-  .story-quote-text { font-size: 16px; }
-  .story-item { padding: 16px 0; }
-  .story-text { font-size: 15px; }
+  /* Story */
+  .story-item { padding: 14px 0; gap: 14px; }
+  .story-num { font-size: 18px; }
+  .story-text { font-size: 14px; }
+  .story-quote { padding: 22px 18px; }
+  .story-quote-text { font-size: 15px; }
 
+  /* Offline */
   .offline-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .offline-item { padding: 18px 14px; }
-  .offline-phone { max-width: 160px; }
+  .offline-item { padding: 16px 12px; gap: 8px; }
+  .offline-icon { font-size: 18px; }
+  .offline-label { font-size: 13px; }
+  .offline-sub { font-size: 11px; }
+  .offline-phone { max-width: 150px; }
 
+  /* Early banner */
+  .early-banner { flex-direction: column; align-items: flex-start; padding: 20px 16px; gap: 16px; border-radius: 14px; }
+  .early-banner .btn { width: 100%; justify-content: center; }
+  .early-banner-title { font-size: 15px; }
+  .early-banner-text { font-size: 13px; }
+
+  /* Screenshots */
   .screenshots-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .screenshot-wrap:nth-child(3) .phone-frame { transform: none; }
+  .screenshot-label { font-size: 12px; }
 
-  .pricing-card { padding: 32px 20px; margin-top: 40px; border-radius: 20px; }
-  .pricing-price { font-size: 64px; letter-spacing: -2px; }
-  .pricing-currency { font-size: 28px; }
-  .pricing-includes li { font-size: 14px; }
+  /* Pricing */
+  .pricing-card { padding: 28px 18px; border-radius: 18px; margin-top: 36px; }
+  .pricing-price { font-size: 60px; letter-spacing: -2px; }
+  .pricing-currency { font-size: 26px; }
+  .pricing-period { font-size: 13px; }
+  .pricing-includes li { font-size: 13px; }
+  .pricing-early { padding: 14px 16px; }
+  .pricing-early-title { font-size: 12px; }
+  .pricing-early-text { font-size: 12px; }
+  .pricing-note { font-size: 12px; }
+  .pricing-launch { font-size: 11px; }
 
-  .faq-question { font-size: 15px; }
-  .faq-answer { font-size: 14px; }
+  /* FAQ */
+  .faq-question { font-size: 14px; padding: 16px 0; }
+  .faq-answer { font-size: 13px; }
+  .faq-header { margin-bottom: 36px; }
 
-  footer { padding: 28px 16px; }
+  /* Footer */
+  footer { padding: 24px 16px; gap: 10px; }
+  .footer-logo { font-size: 14px; }
+  .footer-copy { font-size: 12px; }
   .footer-ig { font-size: 13px; }
 }
 </style>
@@ -785,16 +840,11 @@ footer {
       </div>
 
       <div class="hero-visual">
-        <div class="hero-badge badge-left">
-          <div class="badge-label">Funciona siempre</div>
-          <div class="badge-val">100% offline</div>
-        </div>
         <div class="phone-frame hero-phone">
           <img src="IMG_3726.PNG" alt="Pantalla de inicio de Agenda">
         </div>
         <div class="hero-badge badge-right">
-          <div class="badge-label">Pago único</div>
-          <div class="badge-val">Sin suscripciones</div>
+          <div class="badge-val">100% offline · Sin suscripciones</div>
         </div>
       </div>
     </div>
@@ -1022,7 +1072,7 @@ footer {
       </ul>
       <a href="#" class="btn btn-primary btn-large pricing-btn">Comprar ahora — 20€</a>
       <div class="pricing-note">14 días para probarlo. Si no te convence, te devuelvo el dinero.</div>
-      <div class="pricing-launch">Precio de lanzamiento. Subirá cuando termine esta fase.</div>
+      <div class="pricing-launch">Precio de lanzamiento: 20€. Mi intención es mantenerlo así mientras sigo validando Agenda con otras profesionales del sector.</div>
     </div>
   </div>
 </section>
@@ -1058,6 +1108,14 @@ footer {
       <details class="faq-item">
         <summary class="faq-question">¿Tiene manual de uso?</summary>
         <p class="faq-answer">Sí. Agenda incluye un manual completo para que puedas empezar desde el primer día sin ninguna duda.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Necesito crear una cuenta?</summary>
+        <p class="faq-answer">No. Agenda funciona completamente en tu teléfono. No necesitas correo electrónico, contraseña ni registros.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-question">¿Quién tiene acceso a mis datos?</summary>
+        <p class="faq-answer">Solo tú. Toda la información permanece almacenada localmente en tu dispositivo. Nada sale de tu móvil.</p>
       </details>
     </div>
   </div>
