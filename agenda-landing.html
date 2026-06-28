@@ -880,7 +880,7 @@ footer {
         <div class="hero-actions">
           <div class="hero-btns">
             <a href="#screenshots" class="btn btn-primary btn-large">Ver cómo funciona</a>
-            <a href="https://pay.hotmart.com/N106530075U" target="_blank" rel="noopener" class="btn btn-dark btn-large">Comprar</a>
+            <a href="#pricing" class="btn btn-dark btn-large">Comprar</a>
             <div class="hero-trust">Pago 100% seguro</div>
           </div>
         </div>
@@ -1178,6 +1178,11 @@ footer {
 <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Volver arriba">↑</button>
 
 <script>
+  // Siempre abrir desde arriba
+  if (history.scrollRestoration) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
+  // Botón volver arriba
   const btn = document.getElementById('backToTop');
   window.addEventListener('scroll', () => {
     btn.classList.toggle('visible', window.scrollY > 400);
