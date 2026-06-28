@@ -575,9 +575,7 @@ footer {
 
   .features-grid { grid-template-columns: 1fr 1fr; }
 
-  .screenshots-grid { grid-template-columns: repeat(3, 1fr); }
-  .screenshots-grid .screenshot-wrap:nth-child(4),
-  .screenshots-grid .screenshot-wrap:nth-child(5) { display: none; }
+  .screenshots-grid { grid-template-columns: repeat(3, 1fr); row-gap: 24px; }
   .screenshot-wrap:nth-child(3) .phone-frame { transform: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15); }
 
   footer { flex-direction: column; text-align: center; padding: 32px 20px; gap: 12px; }
@@ -612,7 +610,6 @@ footer {
   .offline-phone { max-width: 160px; }
 
   .screenshots-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .screenshots-grid .screenshot-wrap:nth-child(5) { display: none; }
   .screenshot-wrap:nth-child(3) .phone-frame { transform: none; }
 
   .pricing-card { padding: 32px 20px; margin-top: 40px; border-radius: 20px; }
