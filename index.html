@@ -148,6 +148,7 @@ const PATHS = {
   "upload":'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
   "clock":'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
   "check":'<polyline points="20 6 9 17 4 12"/>',
+  "book":'<path d="M4 19.5h16v-13H4m0 6h16"/><path d="M4 6h16M4 6V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/>',
 };
 function icon(name, size){
   size = size || 18;
@@ -937,6 +938,7 @@ function buildMain(){
     el("button",{class:"ico","aria-label":"Inicio", onClick:irAInicio}, icon("home",17)),
     el("button",{class:"ico","aria-label":"Clientas", onClick:()=>openClientesView()}, icon("users",17)),
     el("button",{class:"ico","aria-label":"Calendario", onClick:()=>openMonthView()}, icon("calendar",17)),
+    el("button",{class:"ico","aria-label":"Manual", onClick:openManualView}, icon("book",17)),
     el("button",{class:"ico","aria-label":"Buscar", onClick:openSearch}, icon("search",17)),
     el("button",{class:"ico","aria-label":"Ajustes", onClick:openSettings}, icon("settings",17))
   );
@@ -1595,6 +1597,10 @@ function openConfigurarPin(){
   document.body.appendChild(overlay);
 }
 
+function openManualView(){
+  window.open('./manual_v1.pdf', '_blank');
+}
+
 function openSettings(){
   closeOverlays();
   const { overlay, sheet } = buildSheet();
@@ -1979,7 +1985,7 @@ function openClienteForm(cliente, opts){
 
     const premio = premioFidelidad(cliente.nombre);
     if(premio){
-      const mensajeNotificacion = "¡Hola "+cliente.nombre+"!\n\nLlevas varios meses consecutivos sin faltar a tu cita y te quiero recompensarte.\nTe regalo: "+state.fidelidadPremio+"\n\nTe espero en tu próxima cita. 💝";
+      const mensajeNotificacion = "¡Hola "+cliente.nombre+"!\n\nLlevas varios meses consecutivos sin faltar a tu cita y te quiero recompensar.\nTe regalo: "+state.fidelidadPremio+"\n\nTe espero en tu próxima cita. 💝";
       const whatsappUrl = "https://wa.me/?text="+encodeURIComponent(mensajeNotificacion);
       sheet.appendChild(el("div",{style:{padding:"14px",marginBottom:"18px",borderRadius:"12px",background:"var(--accentSoft)",border:"1px solid var(--accent)"}},
         el("div",{style:{display:"flex",alignItems:"center",gap:"10px",marginBottom:"12px"}},
