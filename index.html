@@ -604,7 +604,8 @@ async function generarImagenDisponibilidad(viewMonth, dias, subtitulo){
 
   ctx.fillStyle = COL.ink;
   ctx.font = F_TITULO;
-  ctx.fillText("Disponibilidad", PAD, titleY);
+  // Título "Disponibilidad" removido (ahora aparece como h3 antes de la imagen)
+
 
   ctx.fillStyle = COL.accent;
   ctx.font = F_SUB;
@@ -2138,8 +2139,7 @@ async function openDisponibilidad(mesInicial){
   let viewMonth = (mesInicial instanceof Date) ? new Date(mesInicial.getFullYear(), mesInicial.getMonth(), 1) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   const { overlay, sheet } = buildSheet();
 
-  sheet.appendChild(el("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"4px"}},
-    el("h3",{class:"serif",style:{fontSize:"20px",margin:"0"}},"Disponibilidad"),
+  sheet.appendChild(el("div",{style:{display:"flex",alignItems:"center",justifyContent:"flex-end",marginBottom:"4px"}},
     el("button",{"aria-label":"Cerrar",style:{padding:"4px",color:"var(--muted)"}, onClick:closeOverlays}, icon("x",20))
   ));
   sheet.appendChild(el("p",{style:{fontSize:"12px",margin:"0 0 14px",color:"var(--muted)"}},
@@ -2183,6 +2183,8 @@ async function openDisponibilidad(mesInicial){
   renderRango();
   sheet.appendChild(rangoWrap);
   sheet.appendChild(rangoPersonalizadoWrap);
+
+  sheet.appendChild(el("h3",{class:"serif",style:{fontSize:"20px",margin:"14px 0 8px 0"}},"Disponibilidad"));
 
   const previewWrap = el("div",{style:{borderRadius:"14px",overflow:"hidden",border:"1px solid var(--line)",marginBottom:"10px",background:"var(--bg)",minHeight:"120px",display:"flex",alignItems:"center",justifyContent:"center"}});
   const img = el("img",{style:{display:"block",width:"100%"}});
