@@ -213,8 +213,16 @@ function normCitas(citas){
     out[k] = (citas[k]||[]).map(c=>{
       let servicios = c.servicios;
       if(!Array.isArray(servicios)) servicios = c.servicio ? [c.servicio] : [];
+      // Normalizar anticipo (opcional): {activo, importe, metodo}
+      let anticipo = null;
+      if(c.anticipo && typeof c.anticipo==="object" && c.anticipo.activo && typeof c.anticipo.importe==="number" && c.anticipo.importe>0){
+        anticipo = { activo:true, importe:c.anticipo.importe, metodo: (typeof c.anticipo.metodo==="string"? c.anticipo.metodo : "") };
+      }
+      // Estado: solo guardamos "no_asistio" explícitamente; el resto se deriva de pago/anticipo
+      const estado = (c.estado==="no_asistio") ? "no_asistio" : null;
       return { id:c.id, hora:c.hora||"", clienta:c.clienta||"", servicios:servicios, notas:c.notas||"", pago: c.pago||null,
-        propina: typeof c.propina==="number" ? c.propina : 0 };
+        propina: typeof c.propina==="number" ? c.propina : 0,
+        anticipo: anticipo, estado: estado };
     });
   }
   return out;
@@ -241,6 +249,7 @@ let state = { citas:{}, servicios:SERVICIOS_DEFAULT, incluirSabado:true, cliente
   negocio:"Mi negocio", tema:"rosado", horarios:HORARIOS_DEFAULT.slice(), configurado:false, logo:null, piePersonalizado:"",
   fidelidadActiva:false, fidelidadMeses:5, fidelidadPremio:"un diseño gratis",
   conceptosGasto:["Autónomos","Luz","Agua","Local","Gestoría"],
+  nombreAnticipo:"Anticipo",
   formasPago:[{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}] };
 let selectedKey = toKey(new Date());
 
@@ -267,6 +276,7 @@ function load(){
         fidelidadMeses: (typeof p.fidelidadMeses==="number" && p.fidelidadMeses>=2) ? p.fidelidadMeses : 5,
         fidelidadPremio: typeof p.fidelidadPremio==="string" && p.fidelidadPremio.trim() ? p.fidelidadPremio : "un diseño gratis",
         conceptosGasto: Array.isArray(p.conceptosGasto) ? p.conceptosGasto.filter(x=>typeof x==="string" && x.trim()) : ["Autónomos","Luz","Agua","Local","Gestoría"],
+        nombreAnticipo: typeof p.nombreAnticipo==="string" && p.nombreAnticipo.trim() ? p.nombreAnticipo.trim() : "Anticipo",
         formasPago: Array.isArray(p.formasPago) ? p.formasPago.filter(x=>x&&typeof x.id==="string"&&typeof x.nombre==="string") : [{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}],
         configurado: true, // ya había datos guardados de antes: no forzar el asistente
       };
@@ -282,6 +292,18 @@ function save(){
 
 function precioDe(nombre){ const s=state.servicios.find(x=>x.nombre===nombre); return s && typeof s.precio==="number"? s.precio : 0; }
 function totalCita(c){ return (c.servicios||[]).reduce((t,n)=>t+precioDe(n),0); }
+/* ===== Helpers de anticipo / estado ===== */
+function anticipoDe(c){ return (c && c.anticipo && c.anticipo.activo && c.anticipo.importe>0) ? c.anticipo.importe : 0; }
+function tieneAnticipo(c){ return anticipoDe(c)>0; }
+function noAsistio(c){ return c && c.estado==="no_asistio"; }
+// Lo que queda por cobrar el día de la cita (total menos lo ya adelantado)
+function pendienteCita(c){ return Math.max(0, totalCita(c) - anticipoDe(c)); }
+// Ingreso real que ha generado la cita (para totales y estadísticas)
+function ingresoCita(c){
+  if(noAsistio(c)) return anticipoDe(c);   // no vino: solo se retiene el anticipo
+  if(c.pago) return totalCita(c);          // cobrada por completo
+  return 0;                                 // pendiente, aún no genera ingreso
+}
 function historialCliente(nombre){
   let totalCitas=0, totalGastado=0, ultimaFecha=null;
   const conteoServicios = {};
@@ -328,6 +350,7 @@ function premioFidelidad(nombre){
 const DIAS_SEMANA_NOMBRE = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 function estadisticasMes(refDate){
   let totalCitasMes = 0, totalIngreso = 0, citasCobradas = 0;
+  let anticiposRetenidos = 0, citasNoAsistio = 0;
   const porDia = {}, conteoServ = {};
   for(const k in state.citas){
     const d = fromKey(k);
@@ -336,6 +359,11 @@ function estadisticasMes(refDate){
       totalCitasMes++;
       porDia[d.getDay()] = (porDia[d.getDay()]||0)+1;
       (c.servicios||[]).forEach(s=>{ conteoServ[s]=(conteoServ[s]||0)+1; });
+      if(noAsistio(c)){
+        citasNoAsistio++;
+        anticiposRetenidos += anticipoDe(c);
+        return;
+      }
       if(c.pago){ totalIngreso += totalCita(c); citasCobradas++; }
     });
   }
@@ -347,6 +375,8 @@ function estadisticasMes(refDate){
     diaTop: diaTopEntry ? DIAS_SEMANA_NOMBRE[Number(diaTopEntry[0])] : "—",
     ticketMedio: citasCobradas ? totalIngreso/citasCobradas : 0,
     ingresoMedioPorCita: totalCitasMes ? totalIngreso/totalCitasMes : 0,
+    anticiposRetenidos, citasNoAsistio,
+    ingresosPorServicios: totalIngreso,
   };
 }
 function clientasInactivas(){
@@ -414,6 +444,15 @@ function totalMes(refDate, metodo){
     const d = fromKey(k);
     if(d.getFullYear()===refDate.getFullYear() && d.getMonth()===refDate.getMonth()){
       state.citas[k].forEach(c=>{
+        if(noAsistio(c)){
+          // No vino: solo cuenta el anticipo retenido, atribuido a su método de pago
+          const ant = anticipoDe(c);
+          if(ant>0){
+            if(metodo){ if(c.anticipo.metodo===metodo) total += ant; }
+            else total += ant;
+          }
+          return;
+        }
         if(!c.pago) return; // no cobrado todavía: no cuenta
         if(metodo && c.pago!==metodo) return;
         total += totalCita(c);
@@ -652,7 +691,7 @@ async function generarImagenDisponibilidad(viewMonth, dias, subtitulo){
 }
 
 function contactsSupported(){
-  return typeof navigator!=="undefined" && "contacts" in navigator && typeof window.ContactsManager!=="undefined";
+  return typeof navigator!=="undefined" && "contacts" in navigator;
 }
 async function pickContact(){
   try{
@@ -662,7 +701,16 @@ async function pickContact(){
     const nombre = (c.name && c.name[0]) ? c.name[0] : "";
     const tel = (c.tel && c.tel[0]) ? c.tel[0] : "";
     return { nombre, tel };
-  }catch(e){ return null; }
+  }catch(e){
+    console.error("Error importando contacto:", e);
+    // Mensaje amable según el dispositivo
+    if(navigator.userAgent.includes("iPhone") || navigator.userAgent.includes("iPad")){
+      alert("Lo siento, importar contactos no está soportado en iPhone todavía. Por favor, ingresa el nombre manualmente.");
+    } else {
+      alert("No se pudo importar el contacto. Intenta de nuevo.");
+    }
+    return null;
+  }
 }
 
 /* ============ toast ============ */
@@ -858,8 +906,10 @@ function buildInicio(){
 
   // ---- Hoy ----
   const citasHoyArr = state.citas[hoyKey]||[];
-  const pendienteHoy = citasHoyArr.reduce((t,c)=> !c.pago ? t+totalCita(c)+(c.propina||0) : t, 0);
-  const cobradoHoy = citasHoyArr.reduce((t,c)=> c.pago ? t+totalCita(c) : t, 0);
+  // Pendiente = lo que falta cobrar el día de la cita (total menos anticipo ya recibido). No-show no cuenta como pendiente.
+  const pendienteHoy = citasHoyArr.reduce((t,c)=> (!c.pago && !noAsistio(c)) ? t+pendienteCita(c)+(c.propina||0) : t, 0);
+  // Cobrado = ingreso real generado (cita cobrada = total; no-show = anticipo retenido)
+  const cobradoHoy = citasHoyArr.reduce((t,c)=> t+ingresoCita(c), 0);
   const propinaHoy = citasHoyArr.reduce((t,c)=> c.pago ? t+(c.propina||0) : t, 0);
   wrap.appendChild(tarjeta(
     el("p",{class:"label",style:{margin:"0 0 8px"}},"Hoy"),
@@ -1000,7 +1050,7 @@ function buildMain(){
 
   // encabezado del día + total
   const citas = (state.citas[selectedKey]||[]).slice().sort((a,b)=>(a.hora||"").localeCompare(b.hora||""));
-  const totalDia = citas.reduce((t,c)=> c.pago ? t+totalCita(c) : t, 0);
+  const totalDia = citas.reduce((t,c)=> t+ingresoCita(c), 0);
   const propinasDia = citas.reduce((t,c)=> c.pago ? t+(c.propina||0) : t, 0);
   const dayHead = el("div",{style:{display:"flex",alignItems:"baseline",justifyContent:"space-between",marginBottom:"12px"}});
   dayHead.appendChild(el("h2",{class:"serif",style:{fontSize:"20px",margin:"0"}}, cap(fmtDiaLargo(selDate))));
@@ -1038,13 +1088,33 @@ function buildMain(){
       );
       if(c.notas) mid.appendChild(el("span",{class:"truncate",style:{display:"block",fontSize:"12px",marginTop:"2px",color:"var(--muted)"}}, c.notas));
       const pagoOn = !!c.pago;
-      mid.appendChild(el("span",{style:{display:"inline-block",marginTop:"5px",fontSize:"11px",fontWeight:"500",padding:"2px 9px",borderRadius:"9999px",
-        background: pagoOn ? "var(--accentSoft)" : "transparent",
-        border: pagoOn ? "none" : "1px dashed var(--line)",
-        color: pagoOn ? "var(--accent)" : "var(--muted)"}}, pagoOn ? PAGO_LABELS[c.pago] : "Por cobrar"));
+      const esNoAsistio = noAsistio(c);
+      const nombreAntL = (state.nombreAnticipo||"Anticipo");
+      // Etiqueta de estado
+      const estadoBadge = el("span",{style:{display:"inline-block",marginTop:"5px",fontSize:"11px",fontWeight:"500",padding:"2px 9px",borderRadius:"9999px"}});
+      if(esNoAsistio){
+        estadoBadge.style.background = "#F4E6E4"; estadoBadge.style.color = "var(--danger)";
+        estadoBadge.textContent = "No asistió";
+      } else if(pagoOn){
+        estadoBadge.style.background = "var(--accentSoft)"; estadoBadge.style.color = "var(--accent)";
+        estadoBadge.textContent = PAGO_LABELS[c.pago] || "Cobrado";
+      } else {
+        estadoBadge.style.background = "transparent"; estadoBadge.style.border = "1px dashed var(--line)"; estadoBadge.style.color = "var(--muted)";
+        estadoBadge.textContent = "Por cobrar";
+      }
+      mid.appendChild(estadoBadge);
+      // Indicador de anticipo (discreto)
+      if(tieneAnticipo(c)){
+        mid.appendChild(el("span",{style:{display:"inline-block",marginTop:"5px",marginLeft:"6px",fontSize:"11px",fontWeight:"500",padding:"2px 9px",borderRadius:"9999px",background:"var(--accentSoft)",color:"var(--accent)"}},
+          nombreAntL+" "+eur(anticipoDe(c))));
+      }
       main.appendChild(mid);
       const right = el("span",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",paddingTop:"2px"}});
       if(precio>0) right.appendChild(el("span",{class:"tabnum",style:{fontSize:"14px",fontWeight:"600"}}, eur(precio)));
+      // Si tiene anticipo y no está cobrada ni es no-show, mostrar lo pendiente
+      if(tieneAnticipo(c) && !pagoOn && !esNoAsistio){
+        right.appendChild(el("span",{class:"tabnum",style:{fontSize:"11px",color:"var(--muted)"}}, "Falta "+eur(pendienteCita(c))));
+      }
       if(c.propina>0) right.appendChild(el("span",{class:"tabnum",style:{fontSize:"11px",color:"var(--accent)"}}, "+"+eur(c.propina)+" prop."));
       right.appendChild(el("span",{style:{marginTop:"4px",color:"var(--muted)"}}, icon("pencil",14)));
       main.appendChild(right);
@@ -1147,6 +1217,7 @@ function openCita(dateKey, cita, draft){
     sel = sel.filter(x=>x!==nombre);
     for(let i=0;i<n;i++) sel.push(nombre);
   }
+  let _onServiciosChange = null;
   function renderChips(){
     chips.innerHTML="";
     state.servicios.forEach(s=>{
@@ -1176,6 +1247,7 @@ function openCita(dateKey, cita, draft){
     });
     const total = sel.reduce((t,n)=>t+precioDe(n),0);
     totalLine.textContent = total>0 ? "Total: "+eur(total) : "";
+    if(typeof _onServiciosChange==="function") _onServiciosChange();
   }
   renderChips();
 
@@ -1216,6 +1288,91 @@ function openCita(dateKey, cita, draft){
   });
   renderPropinaToggle();
 
+  /* ===== ANTICIPO / FIANZA (opcional) ===== */
+  const nombreAnt = state.nombreAnticipo || "Anticipo";
+  let anticipoOn = tieneAnticipo(initial);
+  let anticipoMetodo = (initial.anticipo && initial.anticipo.metodo) ? initial.anticipo.metodo : "";
+  let estadoNoAsistio = noAsistio(initial);
+
+  const anticipoImporteInput = el("input",{class:"field",type:"number",step:"0.5",min:"0",inputmode:"decimal",placeholder:"0.00",
+    style:{marginTop:"8px"}});
+  anticipoImporteInput.value = (initial.anticipo && initial.anticipo.importe) ? initial.anticipo.importe : "";
+
+  // Selector de método del anticipo (usa las mismas formas de pago, excepto "Pendiente")
+  const anticipoMetodoChips = el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px",marginTop:"8px"}});
+  function renderAnticipoMetodo(){
+    anticipoMetodoChips.innerHTML="";
+    state.formasPago.filter(f=>f.id!=="pendiente").forEach(f=>{
+      const on = anticipoMetodo===f.id;
+      const chip = el("button",{type:"button", class:"chip"+(on?" chip-on":""), onClick:()=>{ anticipoMetodo=f.id; renderAnticipoMetodo(); }});
+      if(on) chip.appendChild(icon("check",14));
+      chip.appendChild(document.createTextNode(f.nombre));
+      anticipoMetodoChips.appendChild(chip);
+    });
+  }
+  renderAnticipoMetodo();
+
+  // Resumen de cálculo: Total / Anticipo / Pendiente
+  const anticipoResumen = el("div",{style:{marginTop:"10px",padding:"10px 12px",borderRadius:"12px",background:"var(--accentSoft)",fontSize:"13px",lineHeight:"1.7"}});
+  function renderAnticipoResumen(){
+    const total = sel.reduce((t,n)=>t+precioDe(n),0);
+    const ant = parseFloat(anticipoImporteInput.value)||0;
+    const pend = Math.max(0, total-ant);
+    anticipoResumen.innerHTML="";
+    anticipoResumen.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}}, el("span",{},"Total del servicio"), el("strong",{class:"tabnum"}, eur(total))));
+    anticipoResumen.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between"}}, el("span",{}, nombreAnt+" recibido"), el("strong",{class:"tabnum"}, eur(ant))));
+    anticipoResumen.appendChild(el("div",{style:{display:"flex",justifyContent:"space-between",color:"var(--accent)"}}, el("span",{},"Pendiente el día de la cita"), el("strong",{class:"tabnum"}, eur(pend))));
+  }
+  anticipoImporteInput.addEventListener("input", renderAnticipoResumen);
+
+  const anticipoDetalle = el("div",{style:{display: anticipoOn ? "block":"none"}},
+    el("label",{class:"label",style:{marginTop:"4px"}}, "Importe del "+nombreAnt.toLowerCase()),
+    anticipoImporteInput,
+    el("label",{class:"label",style:{marginTop:"8px"}}, "Método de pago del "+nombreAnt.toLowerCase()),
+    anticipoMetodoChips,
+    anticipoResumen
+  );
+
+  const anticipoToggle = el("button",{type:"button", class:"chip"+(anticipoOn?" chip-on":"")});
+  function renderAnticipoToggle(){
+    anticipoToggle.className = "chip"+(anticipoOn?" chip-on":"");
+    anticipoToggle.innerHTML = "";
+    if(anticipoOn) anticipoToggle.appendChild(icon("check",14));
+    anticipoToggle.appendChild(document.createTextNode("Esta cita tiene "+nombreAnt.toLowerCase()));
+    anticipoDetalle.style.display = anticipoOn ? "block" : "none";
+  }
+  anticipoToggle.addEventListener("click", ()=>{
+    anticipoOn = !anticipoOn;
+    if(!anticipoOn){ anticipoImporteInput.value=""; anticipoMetodo=""; renderAnticipoMetodo(); }
+    else { if(!anticipoMetodo){ const primera = state.formasPago.find(f=>f.id!=="pendiente"); if(primera){ anticipoMetodo=primera.id; renderAnticipoMetodo(); } } }
+    renderAnticipoToggle();
+    renderAnticipoResumen();
+    if(anticipoOn) anticipoImporteInput.focus();
+  });
+  renderAnticipoToggle();
+  renderAnticipoResumen();
+
+  // Estado "No asistió" (solo relevante al editar una cita existente con anticipo)
+  const noAsistioToggle = el("button",{type:"button", class:"chip"+(estadoNoAsistio?" chip-on":"")});
+  function renderNoAsistioToggle(){
+    noAsistioToggle.className = "chip"+(estadoNoAsistio?" chip-on":"");
+    noAsistioToggle.innerHTML = "";
+    if(estadoNoAsistio) noAsistioToggle.appendChild(icon("check",14));
+    noAsistioToggle.appendChild(document.createTextNode("La clienta no asistió"));
+  }
+  noAsistioToggle.addEventListener("click", ()=>{
+    estadoNoAsistio = !estadoNoAsistio;
+    renderNoAsistioToggle();
+  });
+  renderNoAsistioToggle();
+  const noAsistioWrap = el("div",{},
+    noAsistioToggle,
+    el("p",{style:{fontSize:"11px",margin:"6px 0 0",color:"var(--muted)"}},
+      "Si la marcas, solo se contará el "+nombreAnt.toLowerCase()+" retenido como ingreso.")
+  );
+  // Recalcula el resumen del anticipo cada vez que cambian los servicios
+  _onServiciosChange = function(){ if(typeof renderAnticipoResumen==="function") renderAnticipoResumen(); };
+
   const err = el("p",{style:{fontSize:"12px",color:"var(--danger)",margin:"0"}});
 
   const pillBtnStyle = {display:"inline-flex",alignItems:"center",gap:"6px",fontSize:"13px",padding:"7px 14px",
@@ -1236,7 +1393,9 @@ function openCita(dateKey, cita, draft){
   accionesClienta.appendChild(el("button",{type:"button", style:pillBtnStyle,
     onClick:()=>{
       const snapshot = { hora:horaSel, clienta:clientaInput.value, telefono:phoneInput.value,
-        servicios:sel.slice(), notas:notasInput.value, pago:pagoSel, propina: propinaOn ? (parseFloat(propinaInput.value)||0) : 0 };
+        servicios:sel.slice(), notas:notasInput.value, pago:pagoSel, propina: propinaOn ? (parseFloat(propinaInput.value)||0) : 0,
+        anticipo: anticipoOn ? { activo:true, importe:(parseFloat(anticipoImporteInput.value)||0), metodo:anticipoMetodo } : null,
+        estado: estadoNoAsistio ? "no_asistio" : null };
       openClientesView({
         onSelect:(nombre, tel)=>{ snapshot.clienta=nombre; snapshot.telefono=tel||""; openCita(dateKey, cita, snapshot); },
         onCancel:()=> openCita(dateKey, cita, snapshot)
@@ -1271,6 +1430,8 @@ function openCita(dateKey, cita, draft){
     el("div",{}, el("label",{class:"label"},"Servicios (puedes elegir varios)"), chips, totalLine),
     el("div",{}, el("label",{class:"label"},"Cobro"), pagoChips),
     el("div",{}, el("label",{class:"label"},"Propina (opcional)"), propinaToggle, propinaInput),
+    el("div",{}, el("label",{class:"label"}, nombreAnt+" (opcional)"), anticipoToggle, anticipoDetalle),
+    (cita ? el("div",{}, el("label",{class:"label"},"Asistencia"), noAsistioWrap) : el("span",{style:{display:"none"}})),
     el("div",{}, el("label",{class:"label"},"Notas (opcional)"), notasInput),
     err
   );
@@ -1279,11 +1440,23 @@ function openCita(dateKey, cita, draft){
   function guardar(){
     if(!clientaInput.value.trim()){ err.textContent="Escribe el nombre de la clienta."; return; }
     const nombreClienta = clientaInput.value.trim();
+    // Construir objeto anticipo si está activo y tiene importe válido
+    let anticipoObj = null;
+    if(anticipoOn){
+      const imp = parseFloat(anticipoImporteInput.value)||0;
+      if(imp>0){
+        let met = anticipoMetodo;
+        if(!met){ const primera = state.formasPago.find(f=>f.id!=="pendiente"); met = primera ? primera.id : ""; }
+        anticipoObj = { activo:true, importe:imp, metodo:met };
+      }
+    }
     const obj = {
       id: (cita && cita.id) ? cita.id : (Date.now()+"-"+Math.random().toString(36).slice(2,7)),
       hora: horaSel, clienta: nombreClienta,
       servicios: sel, notas: notasInput.value.trim(), pago: pagoSel || null,
-      propina: propinaOn ? (parseFloat(propinaInput.value)||0) : 0
+      propina: propinaOn ? (parseFloat(propinaInput.value)||0) : 0,
+      anticipo: anticipoObj,
+      estado: estadoNoAsistio ? "no_asistio" : null
     };
     const arr = state.citas[dateKey] ? state.citas[dateKey].slice() : [];
     if(cita && cita.id){
@@ -1780,6 +1953,19 @@ function openSettings(){
     ));
   });
   sheet.appendChild(fpList);
+
+  // Nombre del anticipo / fianza / seña
+  sheet.appendChild(el("p",{style:{fontSize:"12px",fontWeight:"500",margin:"20px 0 8px",color:"var(--muted)"}},"Nombre del anticipo"));
+  sheet.appendChild(el("p",{style:{fontSize:"11px",lineHeight:"1.4",margin:"0 0 10px",color:"var(--muted)"}},
+    "Cómo se llama el pago adelantado en tu país: Anticipo, Fianza, Seña, Depósito…"));
+  const antNombreInput = el("input",{class:"field",placeholder:"Ej. Fianza, Seña, Depósito…"});
+  antNombreInput.value = state.nombreAnticipo || "Anticipo";
+  antNombreInput.addEventListener("change", ()=>{
+    const v = antNombreInput.value.trim();
+    state.nombreAnticipo = v || "Anticipo";
+    save(); toast("Guardado");
+  });
+  sheet.appendChild(antNombreInput);
 
   document.body.appendChild(overlay);
 }
@@ -2294,12 +2480,19 @@ function openEstadisticasMes(mesInicial){
   function renderStats(){
     monthLabel.textContent = cap(fmtMes(viewMonth));
     const st = estadisticasMes(viewMonth);
+    const nombreAntL = (state.nombreAnticipo||"Anticipo");
     lista.innerHTML = "";
     lista.appendChild(fila("Citas del mes", String(st.totalCitasMes)));
     lista.appendChild(fila("Servicio más solicitado", st.servicioTop));
     lista.appendChild(fila("Día con más trabajo", st.diaTop));
     lista.appendChild(fila("Ticket medio (por cita cobrada)", eur(st.ticketMedio)));
     lista.appendChild(fila("Ingreso medio por cita agendada", eur(st.ingresoMedioPorCita)));
+    // Solo mostrar lo de anticipos retenidos si hubo no-shows con anticipo en el mes
+    if(st.citasNoAsistio>0 || st.anticiposRetenidos>0){
+      lista.appendChild(fila("Ingresos por servicios", eur(st.ingresosPorServicios)));
+      lista.appendChild(fila(nombreAntL+"s retenidos (no asistió)", eur(st.anticiposRetenidos)));
+      lista.appendChild(fila("Ingresos totales", eur(st.ingresosPorServicios + st.anticiposRetenidos)));
+    }
   }
   renderStats();
 
