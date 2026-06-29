@@ -198,7 +198,9 @@ const fmtMes = (d)=>new Intl.DateTimeFormat("es-ES",{month:"long",year:"numeric"
 const fmtDiaLargo = (d)=>new Intl.DateTimeFormat("es-ES",{weekday:"long",day:"numeric",month:"long"}).format(d);
 const fmtDiaCorto = (d)=>new Intl.DateTimeFormat("es-ES",{day:"numeric",month:"short"}).format(d);
 const cap = (s)=> s ? s.charAt(0).toUpperCase()+s.slice(1) : s;
-const eur = (n)=> (Number.isInteger(n)? n : n.toFixed(2)) + " €";
+// Moneda configurable: el símbolo se guarda en state.moneda (por defecto €)
+function simboloMoneda(){ return (state && state.moneda) ? state.moneda : "€"; }
+const eur = (n)=> (Number.isInteger(n)? n : n.toFixed(2)) + " " + simboloMoneda();
 const normTxt = (s)=> (s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ");
 
 function normServicios(arr){
@@ -250,6 +252,7 @@ let state = { citas:{}, servicios:SERVICIOS_DEFAULT, incluirSabado:true, cliente
   fidelidadActiva:false, fidelidadMeses:5, fidelidadPremio:"un diseño gratis",
   conceptosGasto:["Autónomos","Luz","Agua","Local","Gestoría"],
   nombreAnticipo:"Anticipo",
+  moneda:"€",
   formasPago:[{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}] };
 let selectedKey = toKey(new Date());
 
@@ -277,6 +280,7 @@ function load(){
         fidelidadPremio: typeof p.fidelidadPremio==="string" && p.fidelidadPremio.trim() ? p.fidelidadPremio : "un diseño gratis",
         conceptosGasto: Array.isArray(p.conceptosGasto) ? p.conceptosGasto.filter(x=>typeof x==="string" && x.trim()) : ["Autónomos","Luz","Agua","Local","Gestoría"],
         nombreAnticipo: typeof p.nombreAnticipo==="string" && p.nombreAnticipo.trim() ? p.nombreAnticipo.trim() : "Anticipo",
+        moneda: typeof p.moneda==="string" && p.moneda.trim() ? p.moneda.trim() : "€",
         formasPago: Array.isArray(p.formasPago) ? p.formasPago.filter(x=>x&&typeof x.id==="string"&&typeof x.nombre==="string") : [{id:"pendiente",nombre:"Pendiente"},{id:"efectivo",nombre:"Efectivo"},{id:"tarjeta",nombre:"Tarjeta"},{id:"bizum",nombre:"Bizum"}],
         configurado: true, // ya había datos guardados de antes: no forzar el asistente
       };
@@ -1626,7 +1630,7 @@ function openConfiguracionNegocio(forzado){
   }
   renderServiciosCfg();
   const servNombre = el("input",{class:"field",placeholder:"Servicio…",style:{flex:"1",minWidth:"0",fontSize:"14px"}});
-  const servPrecio = el("input",{class:"field",inputmode:"decimal",placeholder:"€",style:{width:"56px",textAlign:"center",fontSize:"14px"}});
+  const servPrecio = el("input",{class:"field",inputmode:"decimal",placeholder:simboloMoneda(),style:{width:"56px",textAlign:"center",fontSize:"14px"}});
   const servDur = el("input",{class:"field",inputmode:"numeric",placeholder:"min",style:{width:"56px",textAlign:"center",fontSize:"14px"}});
   const servCfgErr = el("p",{style:{fontSize:"12px",color:"var(--danger)",margin:"6px 0 0"}});
   function añadirServicio(){
@@ -1834,7 +1838,7 @@ function openSettings(){
   sheet.appendChild(el("p",{style:{fontSize:"11px",lineHeight:"1.4",margin:"0 0 10px",color:"var(--muted)"}},
     "La duración sirve para que la app sepa cuánto ocupa cada servicio y no te muestre como libre un horario que en realidad ya está cubierto por una cita larga."));
   const nombreInput = el("input",{class:"field",placeholder:"Servicio…",style:{flex:"1",minWidth:"0",fontSize:"14px"}});
-  const precioInput = el("input",{class:"field",inputmode:"decimal",placeholder:"€",style:{width:"56px",textAlign:"center",fontSize:"14px"}});
+  const precioInput = el("input",{class:"field",inputmode:"decimal",placeholder:simboloMoneda(),style:{width:"56px",textAlign:"center",fontSize:"14px"}});
   const duracionInput = el("input",{class:"field",inputmode:"numeric",placeholder:"min",style:{width:"56px",textAlign:"center",fontSize:"14px"}});
   const servErr = el("p",{style:{fontSize:"12px",color:"var(--danger)",margin:"0 0 8px",minHeight:"0"}});
   function añadir(){
@@ -1881,7 +1885,7 @@ function openSettings(){
     });
     const row = el("div",{style:{display:"flex",alignItems:"center",gap:"6px",background:"#fff",border:"1px solid var(--line)",borderRadius:"12px",padding:"8px 12px"}},
       el("span",{class:"truncate",style:{flex:"1",minWidth:"0",fontSize:"14px"}}, s.nombre),
-      el("div",{style:{display:"flex",alignItems:"center",gap:"3px"}}, pInput, el("span",{style:{fontSize:"12px",color:"var(--muted)"}},"€")),
+      el("div",{style:{display:"flex",alignItems:"center",gap:"3px"}}, pInput, el("span",{style:{fontSize:"12px",color:"var(--muted)"}},simboloMoneda())),
       el("div",{style:{display:"flex",alignItems:"center",gap:"3px"}}, dInput, el("span",{style:{fontSize:"12px",color:"var(--muted)"}},"min")),
       el("button",{"aria-label":"Eliminar "+s.nombre,style:{padding:"4px",color:"var(--muted)"},
         onClick:()=>{ state.servicios = state.servicios.filter(x=>x.nombre!==s.nombre); save(); render(); openSettings(); }}, icon("x",16))
@@ -1953,6 +1957,44 @@ function openSettings(){
     ));
   });
   sheet.appendChild(fpList);
+
+  // Moneda
+  sheet.appendChild(el("p",{style:{fontSize:"12px",fontWeight:"500",margin:"20px 0 8px",color:"var(--muted)"}},"Moneda"));
+  sheet.appendChild(el("p",{style:{fontSize:"11px",lineHeight:"1.4",margin:"0 0 10px",color:"var(--muted)"}},
+    "El símbolo que aparece en precios, cobros y estadísticas."));
+  const MONEDAS = [
+    {sym:"€", label:"€ Euro"},
+    {sym:"$", label:"$ Dólar / Peso"},
+    {sym:"MXN$", label:"MXN$ Peso mex."},
+    {sym:"ARS$", label:"ARS$ Peso arg."},
+    {sym:"COP$", label:"COP$ Peso col."},
+    {sym:"S/", label:"S/ Sol"},
+    {sym:"₡", label:"₡ Colón"},
+    {sym:"Bs", label:"Bs Bolívar"},
+  ];
+  const monedaChips = el("div",{style:{display:"flex",flexWrap:"wrap",gap:"8px"}});
+  const monedaCustom = el("input",{class:"field",placeholder:"Otra…",style:{marginTop:"8px"}});
+  function renderMonedaChips(){
+    monedaChips.innerHTML="";
+    let esConocida = false;
+    MONEDAS.forEach(m=>{
+      const on = state.moneda===m.sym;
+      if(on) esConocida = true;
+      const chip = el("button",{type:"button", class:"chip"+(on?" chip-on":""),
+        onClick:()=>{ state.moneda=m.sym; save(); monedaCustom.value=""; renderMonedaChips(); render(); }});
+      if(on) chip.appendChild(icon("check",14));
+      chip.appendChild(document.createTextNode(m.label));
+      monedaChips.appendChild(chip);
+    });
+    if(!esConocida && state.moneda) monedaCustom.value = state.moneda;
+  }
+  renderMonedaChips();
+  monedaCustom.addEventListener("change", ()=>{
+    const v = monedaCustom.value.trim();
+    if(v){ state.moneda = v; save(); renderMonedaChips(); render(); toast("Moneda guardada"); }
+  });
+  sheet.appendChild(monedaChips);
+  sheet.appendChild(monedaCustom);
 
   // Nombre del anticipo / fianza / seña
   sheet.appendChild(el("p",{style:{fontSize:"12px",fontWeight:"500",margin:"20px 0 8px",color:"var(--muted)"}},"Nombre del anticipo"));
